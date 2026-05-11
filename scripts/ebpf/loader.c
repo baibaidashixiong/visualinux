@@ -40,11 +40,18 @@ static int attach_probe(struct bpf_object *obj, struct probe_config *config) {
            config->probe_type, 
            config->probe_target);
 
-    // Try to find program by name first, then by title for older libbpf versions
-    struct bpf_program *prog = bpf_object__find_program_by_name(obj, config->section_name);
-    if (!prog) {
-        // Fallback to find by title for older libbpf versions
-        prog = bpf_object__find_program_by_title(obj, config->section_name);
+    struct bpf_program *prog = NULL;
+    struct bpf_program *p;
+
+    bpf_object__for_each_program(p, obj) {
+        const char *sec_name = bpf_program__section_name(p);
+        const char *prog_name = bpf_program__name(p);
+
+        if ((sec_name && strcmp(sec_name, config->section_name) == 0) ||
+            (prog_name && strcmp(prog_name, config->section_name) == 0)) {
+            prog = p;
+            break;
+        }
     }
     
     if (!prog) {

@@ -56,6 +56,7 @@ build-workload:
 	cp scripts/ebpf/ebpf-vdiff.o        workload/_ebpf/
 	cp scripts/ebpf/ebpf-config.txt     workload/_ebpf/
 	cp scripts/ebpf/ebpf_log_monitor.sh workload/_ebpf/
+	make -C kernel -f scripts/Makefile.build obj=usr srctree=. objtree=. HOSTCC=gcc usr/gen_init_cpio
 	make -C workload/
 
 .PHONY: build build-kernel build-workload

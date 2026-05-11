@@ -25,10 +25,26 @@ def clean():
 # ============================================================
 # busybox
 # ============================================================
+def disable_busybox_tc(config_path):
+    text = config_path.read_text()
+
+    lines = []
+    for line in text.splitlines():
+        if line.startswith("CONFIG_TC="):
+            continue
+        if line.startswith("CONFIG_FEATURE_TC"):
+            continue
+        lines.append(line)
+
+    lines.append("# CONFIG_TC is not set")
+    config_path.write_text("\n".join(lines) + "\n")
+
 
 def build_busybox():
     if not (DIR_BUSYBOX_BIN / 'bin' / 'busybox').is_file():
         shutil.copy(DIR_SCRIPTS / 'busybox.config', DIR_BUSYBOX / '.config')
+        disable_busybox_tc(DIR_BUSYBOX / '.config')
+        subprocess.run(['make', '-C', DIR_BUSYBOX, 'oldconfig'], check=True)
         subprocess.run(['make', '-C', DIR_BUSYBOX, '-j4'], check=True)
         subprocess.run(['make', '-C', DIR_BUSYBOX, 'install'], check=True)
         assert DIR_BUSYBOX_BIN.is_dir()

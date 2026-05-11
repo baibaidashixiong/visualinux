@@ -7,7 +7,7 @@ dir_kernel=$dir_project/kernel
 # init arguments
 
 version=$1
-version_default="6.1.25"
+version_default="6.12.76"
 
 if [ -z "$version" ]; then
     echo "usage: get-kernel.sh <version>"

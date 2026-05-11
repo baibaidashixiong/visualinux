@@ -2,23 +2,27 @@
 CLANG := clang
 
 # bpf-specific flags
-BPF_CFLAGS := -Wall -target bpf -g -O2 -D__BPF_TRACING__ -D__KERNEL__ -D__TARGET_ARCH_x86 -D__BITS_PER_LONG=64
+BPF_CFLAGS := -Wall -target bpf -g -O2 -D__BPF_TRACING__ -D__KERNEL__ -D__TARGET_ARCH_x86 -D__BITS_PER_LONG=64 -nostdinc
+CLANG_INCLUDE := $(shell clang -print-resource-dir)/include
 
 # system include paths for standard C headers
-CLANG_VERSION := $(shell clang --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | cut -d. -f1)
+CLANG_VERSION := $(shell clang --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | cut -d. -f1| head -1)
 SYS_INC_FLAGS := -I/usr/lib/llvm-$(CLANG_VERSION)/lib/clang/*/include
 
 # include paths for kernel headers
 KERNEL_SRC := ../../kernel/
 INC_FLAGS  := \
+	-I$(CLANG_INCLUDE) \
 	-I$(KERNEL_SRC)/tools/lib/bpf \
 	-I$(KERNEL_SRC)/tools/include \
+	-I$(KERNEL_SRC)/tools/lib \
 	-I$(KERNEL_SRC)/tools/include/uapi \
 	-I$(KERNEL_SRC)/include/uapi \
 	-I$(KERNEL_SRC)/include \
 	-I$(KERNEL_SRC)/arch/x86/include \
 	-I$(KERNEL_SRC)/arch/x86/include/uapi \
 	-I$(KERNEL_SRC)/arch/x86/include/generated \
+	-I$(KERNEL_SRC)/arch/x86/include/generated/uapi \
 	-I$(KERNEL_SRC)/include/generated/uapi \
 	-I$(KERNEL_SRC)/include/generated
 
@@ -30,7 +34,7 @@ TARGET := ebpf-vdiff.o
 build: loader $(TARGET)
 
 loader: loader.c
-	$(CLANG) -o ebpf_loader loader.c -g -O2 -static -lbpf -lelf -lz
+	$(CLANG) -o ebpf_loader loader.c -g -O2 -lbpf -lelf -lz
 
 $(TARGET): $(SOURCE)
 	echo "++ build ebpf:$(FILENAME)"
