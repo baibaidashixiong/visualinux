@@ -13,6 +13,15 @@ GDBPORT := 26001
 endif
 
 KERNEL_IMAGE := kernel/arch/x86/boot/bzImage
+HOST_ARCH := $(shell uname -m)
+X86_HOST_ARCHES := x86_64 amd64 i386 i486 i586 i686
+LOONGARCH64_HOST_ARCHES := loongarch64
+
+ifneq ($(filter $(HOST_ARCH),$(X86_HOST_ARCHES)),)
+KERNEL_CONFIG := config_x86_64
+else ifneq ($(filter $(HOST_ARCH),$(LOONGARCH64_HOST_ARCHES)),)
+KERNEL_CONFIG := config_loongarch64
+endif
 
 INITRAMFS_IMAGE := workload/initramfs.img
 ROOTDISK_IMAGE  := workload/rootdisk.img
@@ -46,6 +55,9 @@ build: build-kernel build-workload
 KERNEL_BUILD_J := 4
 
 build-kernel:
+ifdef KERNEL_CONFIG
+	cp $(KERNEL_CONFIG) kernel/.config
+endif
 	make -C kernel/ -j$(KERNEL_BUILD_J)
 	cd kernel/ && ./scripts/clang-tools/gen_compile_commands.py
 

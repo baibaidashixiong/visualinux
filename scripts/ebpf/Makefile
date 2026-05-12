@@ -1,8 +1,17 @@
 # clang
 CLANG := clang
+HOST_ARCH := $(shell uname -m)
+
+ifeq ($(HOST_ARCH),loongarch64)
+BPF_TARGET_ARCH := loongarch
+KERNEL_ARCH := loongarch
+else
+BPF_TARGET_ARCH := x86
+KERNEL_ARCH := x86
+endif
 
 # bpf-specific flags
-BPF_CFLAGS := -Wall -target bpf -g -O2 -D__BPF_TRACING__ -D__KERNEL__ -D__TARGET_ARCH_x86 -D__BITS_PER_LONG=64 -nostdinc
+BPF_CFLAGS := -Wall -target bpf -g -O2 -D__BPF_TRACING__ -D__KERNEL__ -D__TARGET_ARCH_$(BPF_TARGET_ARCH) -D__BITS_PER_LONG=64 -nostdinc
 CLANG_INCLUDE := $(shell clang -print-resource-dir)/include
 
 # system include paths for standard C headers
@@ -12,6 +21,7 @@ SYS_INC_FLAGS := -I/usr/lib/llvm-$(CLANG_VERSION)/lib/clang/*/include
 # include paths for kernel headers
 KERNEL_SRC := ../../kernel/
 INC_FLAGS  := \
+	-I/usr/include/bpf \
 	-I$(CLANG_INCLUDE) \
 	-I$(KERNEL_SRC)/tools/lib/bpf \
 	-I$(KERNEL_SRC)/tools/include \
@@ -19,10 +29,10 @@ INC_FLAGS  := \
 	-I$(KERNEL_SRC)/tools/include/uapi \
 	-I$(KERNEL_SRC)/include/uapi \
 	-I$(KERNEL_SRC)/include \
-	-I$(KERNEL_SRC)/arch/x86/include \
-	-I$(KERNEL_SRC)/arch/x86/include/uapi \
-	-I$(KERNEL_SRC)/arch/x86/include/generated \
-	-I$(KERNEL_SRC)/arch/x86/include/generated/uapi \
+	-I$(KERNEL_SRC)/arch/$(KERNEL_ARCH)/include \
+	-I$(KERNEL_SRC)/arch/$(KERNEL_ARCH)/include/uapi \
+	-I$(KERNEL_SRC)/arch/$(KERNEL_ARCH)/include/generated \
+	-I$(KERNEL_SRC)/arch/$(KERNEL_ARCH)/include/generated/uapi \
 	-I$(KERNEL_SRC)/include/generated/uapi \
 	-I$(KERNEL_SRC)/include/generated
 

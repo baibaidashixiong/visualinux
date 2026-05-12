@@ -20,6 +20,7 @@
 !LICENSE
 !CITATION.*
 !config_x86_64
+!config_loongarch64
 
 *~
 __pycache__/
