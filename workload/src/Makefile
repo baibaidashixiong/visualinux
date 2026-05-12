@@ -4,6 +4,12 @@ endif
 $(info DIR_BIN=$(DIR_BIN))
 
 SUBDIRS := $(wildcard */)
+HOST_ARCH ?= $(shell uname -m)
+
+ifeq ($(HOST_ARCH),loongarch64)
+SUBDIRS := $(filter-out stackrot/,$(SUBDIRS))
+endif
+
 BUILD_SUBDIRS := $(patsubst %,subdir-%,$(SUBDIRS))
 
 build-all: build-dep $(BUILD_SUBDIRS)

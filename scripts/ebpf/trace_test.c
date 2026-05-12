@@ -1,11 +1,7 @@
 #include <linux/bpf.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_tracing.h>
-
-struct pt_regs {
-    __u64 r15, r14, r13, r12, bp, bx, r11, r10, r9, r8;
-    __u64 ax, cx, dx, si, di, orig_ax, ip, cs, flags, sp, ss;
-};
+#include "ebpf_regs.h"
 
 #define MAX_TRACKED 1024
 
