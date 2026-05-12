@@ -71,6 +71,9 @@ def per_cpu_ptr(ptr: KValue, cpu: KValue | int) -> KValue:
     address = (ptr.address + per_cpu_offset(cpu)) % (2**ptr_size)
     return KValue(ptr.gtype, address)
 
+def per_cpu_deref(ptr: KValue, cpu: KValue | int) -> KValue:
+    return per_cpu_ptr(ptr, cpu).dereference()
+
 def per_cpu_offset(cpu: KValue | int) -> int:
     if isinstance(cpu, KValue):
         cpu = cpu.value

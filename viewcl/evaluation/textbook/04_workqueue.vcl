@@ -61,7 +61,8 @@ define PWQ as Box<pool_workqueue> [
     Text wq: wq.name
     Text work_color
     Text refcnt
-    Text nr_active, max_active
+    Text nr_active
+    Text max_active: wq.max_active
 //	struct work_struct	unbound_release_work;
 ] where {
     pool = WorkerPool(@this.pool)
@@ -72,13 +73,13 @@ define WQStruct as Box<workqueue_struct> [
         Text work_color
         Link rescuer -> @rescuer
         Link pwqs -> @pwqs
-        Link cpu_pwqs -> @cpu_pwqs
+        Link cpu_pwqs -> @cpu_pwq
 ] where {
     pwqs = List<workqueue_struct.pwqs>(@this.pwqs).forEach |item| {
         yield PWQ<pool_workqueue.pwqs_node>(@item)
     }
     rescuer = Worker("worker (rescuer)": @this.rescuer)
-    cpu_pwqs = PWQ(${per_cpu_ptr(@this.cpu_pwqs, 0)})
+    cpu_pwq = PWQ(${per_cpu_deref(@this.cpu_pwq, 0)})
 }
 
 // workqueues = List<list_head>(${&workqueues}).forEach |item| {

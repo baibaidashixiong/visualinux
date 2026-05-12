@@ -46,7 +46,7 @@ define PidNamespace as Box<pid_namespace> [
     parent = PidNamespace(@this.parent)
 }
 
-pid_ns = PidNamespace(${task_active_pid_ns(per_cpu_current_task(current_cpu()))})
+pid_ns = PidNamespace(${&init_pid_ns})
 diag textbook_02_pid_namespace {
     plot @pid_ns
 } with {

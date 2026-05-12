@@ -1,6 +1,9 @@
 import evaluation.textbook.01_process_parenthood
 import evaluation.textbook.02_pidhash
-import evaluation.textbook.03_irq_desc
+// 6.12 switched sparse IRQ descriptors from the old irq_desc_tree xarray to
+// the sparse_irqs maple tree. Visualinux has no generic maple-tree container
+// for irq_desc yet, so keep this example disabled in the aggregate run.
+// import evaluation.textbook.03_irq_desc
 import evaluation.textbook.04_workqueue
 import evaluation.textbook.05_timing
 import evaluation.textbook.06_scheduling
@@ -15,6 +18,8 @@ import evaluation.textbook.15_bio
 import evaluation.textbook.16_pagecache
 import evaluation.textbook.17_file_mapping
 import evaluation.textbook.18_anon_rev
-import evaluation.textbook.19_swap_area
+// 6.12.76 default config in this workspace has CONFIG_SWAP=n, so swap_info is
+// not available unless the kernel is rebuilt with swap support.
+// import evaluation.textbook.19_swap_area
 import evaluation.textbook.20_ipc_ns
 import evaluation.textbook.21_socket

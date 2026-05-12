@@ -13,7 +13,6 @@ define SLAB_on_node as Box<slab> {
         Text inuse:   ${get_bitfield(@this, "inuse")}
         Text objects: ${get_bitfield(@this, "objects")}
         Text frozen:  ${get_bitfield(@this, "frozen")}
-        Text __unused
         Text refcount: __page_refcount.counter
     ]
 } where {
@@ -26,14 +25,11 @@ define SLAB_on_cpu as Box<slab> {
         // Link freelist -> @freelist
         Text freelist
         Text inuse, objects, frozen
-        Text __unused
         Text refcount: __page_refcount.counter
-        Link next -> @next
         Text slabs
     ]
 } where {
     // freelist = 
-    next = SLAB_on_cpu(@this.next)
 }
 
 define KMemCacheCPU as Box<kmem_cache_cpu> [
@@ -52,16 +48,16 @@ define KMemCacheNode as Box<kmem_cache_node> [
 	Text nr_partial
 	Link partial -> @partial
 // #ifdef CONFIG_SLUB_DEBUG
-	Text nr_slabs: nr_slabs.counter
-	Text total_objects: total_objects.counter
+	// Text nr_slabs: nr_slabs.counter
+	// Text total_objects: total_objects.counter
 	// Link full -> @full
 ] where {
     partial = List<kmem_cache_node.partial>(@this.partial).forEach |node| {
         yield SLAB_on_node<slab.slab_list>(@node)
     }
-    full = List<kmem_cache_node.full>(@this.full).forEach |node| {
-        yield SLAB_on_node<slab.slab_list>(@node)
-    }
+    // full = List<kmem_cache_node.full>(@this.full).forEach |node| {
+    //     yield SLAB_on_node<slab.slab_list>(@node)
+    // }
 }
 
 define KMemCache as Box<kmem_cache> [

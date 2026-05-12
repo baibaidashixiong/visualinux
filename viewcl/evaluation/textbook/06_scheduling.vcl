@@ -21,7 +21,7 @@ define TaskSched as Box<task_struct> {
 
 define RunqueueCFS as Box<cfs_rq> {
     :default [
-        Text nr_running, min_vruntime
+        Text nr_running, avg_vruntime, zero_vruntime
         Box load [
             Text weight
         ]

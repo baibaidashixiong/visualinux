@@ -41,7 +41,7 @@ define Zone as Box<zone> [
     Text managed_pages: managed_pages.counter
     Shape free_area: @free_area
     Link per_cpu_pageset -> @per_cpu_pageset
-    Text node
+    Text node_id: zone_pgdat.node_id
 ] where {
     free_area = Array(@this.free_area).forEach |item| {
         // yield FreeArea("free_area_${1 << @index}": @item)
@@ -60,7 +60,7 @@ define PGListData as Box<pglist_data> [
     }
 }
 
-node_data = PGListData(${node_data[0]})
+node_data = PGListData(${&contig_page_data})
 
 node_states = Array(${node_states}).forEach |item| {
     yield Box(@item) [
