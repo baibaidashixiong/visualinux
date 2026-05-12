@@ -12,24 +12,32 @@ ifndef GDBPORT
 GDBPORT := 26001
 endif
 
-KERNEL_IMAGE := kernel/arch/x86/boot/bzImage
 HOST_ARCH := $(shell uname -m)
 X86_HOST_ARCHES := x86_64 amd64 i386 i486 i586 i686
 LOONGARCH64_HOST_ARCHES := loongarch64
-
-ifneq ($(filter $(HOST_ARCH),$(X86_HOST_ARCHES)),)
-KERNEL_CONFIG := config_x86_64
-else ifneq ($(filter $(HOST_ARCH),$(LOONGARCH64_HOST_ARCHES)),)
-KERNEL_CONFIG := config_loongarch64
-endif
 
 INITRAMFS_IMAGE := workload/initramfs.img
 ROOTDISK_IMAGE  := workload/rootdisk.img
 INITBIN := /init
 
+ifneq ($(filter $(HOST_ARCH),$(X86_HOST_ARCHES)),)
+KERNEL_CONFIG := config_x86_64
+KERNEL_IMAGE := kernel/arch/x86/boot/bzImage
 QEMU := qemu-system-x86_64
+QEMUFLAGS_MACHINE :=
+QEMUFLAGS_ROOTDISK_DEVICE := -hda $(ROOTDISK_IMAGE)
+ROOT_DEVICE := /dev/sda
+else ifneq ($(filter $(HOST_ARCH),$(LOONGARCH64_HOST_ARCHES)),)
+KERNEL_CONFIG := config_loongarch64
+KERNEL_IMAGE := kernel/arch/loongarch/boot/vmlinuz.efi
+QEMU := qemu-system-loongarch64
+QEMUFLAGS_MACHINE := -machine virt
+QEMUFLAGS_ROOTDISK_DEVICE := -drive file=$(ROOTDISK_IMAGE),format=raw,if=virtio
+ROOT_DEVICE := /dev/vda
+endif
 
-QEMUFLAGS_GENERAL   := -kernel $(KERNEL_IMAGE) -serial mon:stdio -nographic -no-reboot \
+QEMUFLAGS_GENERAL   := $(QEMUFLAGS_MACHINE) -kernel $(KERNEL_IMAGE) -accel kvm \
+		       -serial mon:stdio -nographic -no-reboot \
                        -m 1G -smp cpus=$(NCPU),cores=1,threads=1,sockets=$(NCPU) \
                        -virtfs local,path=./tmp,mount_tag=exp,security_model=none \
                        -netdev user,id=vmnic -device virtio-net,netdev=vmnic
@@ -41,8 +49,8 @@ QEMUFLAGS_INITRAMFS := $(QEMUFLAGS_GENERAL) \
                        -append "console=ttyS0 root=/dev/ram init=$(INITBIN) nokaslr net.ifnames=0"
 
 QEMUFLAGS_ROOTDISK  := $(QEMUFLAGS_GENERAL) \
-                       -hda $(ROOTDISK_IMAGE) \
-                       -append "console=ttyS0 root=/dev/sda init=$(INITBIN) nokaslr rw"
+                       $(QEMUFLAGS_ROOTDISK_DEVICE) \
+                       -append "console=ttyS0 root=$(ROOT_DEVICE) init=$(INITBIN) nokaslr rw"
 
 QEMUFLAGS_BULLSEYE  := $(QEMUFLAGS_GENERAL) \
                        -append "console=ttyS0 root=/dev/sda earlyprintk=serial net.ifnames=0" \
@@ -75,7 +83,7 @@ build-workload:
 
 # rules: run and debug
 
-gdb-start: $(KERNEL_IMAGE) $(INITRAMFS_IMAGE)
+gdb-start: $(KERNEL_IMAGE) $(ROOTDISK_IMAGE)
 	mkdir -p tmp/
 	$(QEMU) $(QEMUFLAGS_ROOTDISK) $(QEMUFLAGS_GDB)
 #	$(QEMU) $(QEMUFLAGS_INITRAMFS) $(QEMUFLAGS_GDB)
