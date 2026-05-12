@@ -19,6 +19,7 @@
 !_config.yml
 !LICENSE
 !CITATION.*
+!config_x86_64
 
 *~
 __pycache__/
